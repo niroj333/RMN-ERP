@@ -1,0 +1,36 @@
+{
+  "name": "@rmn-erp/api",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@rmn-erp/core": "workspace:*",
+    "@rmn-erp/iam": "workspace:*",
+    "@rmn-erp/organization": "workspace:*",
+    "@rmn-erp/person": "workspace:*",
+    "@rmn-erp/events": "workspace:*",
+    "@rmn-erp/master-data": "workspace:*",
+    "@rmn-erp/student": "workspace:*",
+    "fastify": "^5.0.0",
+    "fastify-plugin": "^5.0.0",
+    "@fastify/cookie": "latest",
+    "@fastify/cors": "latest",
+    "@fastify/helmet": "latest",
+    "@fastify/swagger": "latest",
+    "@fastify/swagger-ui": "latest"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "vitest": "^2.0.0",
+    "supertest": "^7.0.0",
+    "@types/supertest": "^6.0.0",
+    "tsx": "^4.0.0"
+  }
+}

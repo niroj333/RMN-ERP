@@ -1,0 +1,25 @@
+{
+  "name": "@rmn-erp/iam",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@fastify/cookie": "^9.3.1",
+    "@rmn-erp/core": "workspace:*",
+    "argon2": "^0.40.1",
+    "drizzle-orm": "^0.45.3",
+    "fastify": "^4.26.2",
+    "ioredis": "^5.3.2",
+    "otplib": "^12.0.1",
+    "postgres": "^3.4.4",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.3"
+  }
+}

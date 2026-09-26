@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  rmn-postgres:
+    image: postgres:16
+    container_name: rmn-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: rmn
+      POSTGRES_PASSWORD: rmn_dev_password
+      POSTGRES_DB: rmn_erp
+    volumes:
+      - rmn-postgres-data:/var/lib/postgresql/data
+    networks:
+      - rmn-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rmn -d rmn_erp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rmn-redis:
+    image: redis:7
+    container_name: rmn-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - rmn-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  rmn-network:
+    driver: bridge
+
+volumes:
+  rmn-postgres-data:

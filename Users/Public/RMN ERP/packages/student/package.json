@@ -1,0 +1,28 @@
+{
+  "name": "@rmn-erp/student",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@rmn-erp/core": "workspace:*",
+    "@rmn-erp/events": "workspace:*",
+    "@rmn-erp/iam": "workspace:*",
+    "@rmn-erp/master-data": "workspace:*",
+    "@rmn-erp/person": "workspace:*",
+    "drizzle-orm": "^0.45.3",
+    "fastify": "^5.0.0",
+    "postgres": "^3.4.0",
+    "uuid": "^9.0.1",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
+}

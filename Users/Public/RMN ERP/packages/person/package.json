@@ -1,0 +1,22 @@
+{
+  "name": "@rmn-erp/person",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@rmn-erp/core": "workspace:*",
+    "@rmn-erp/iam": "workspace:*",
+    "drizzle-orm": "^0.45.3",
+    "fastify": "^5.0.0",
+    "postgres": "^3.4.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^5.0.0"
+  }
+}
