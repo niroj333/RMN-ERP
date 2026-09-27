@@ -24,7 +24,7 @@ export const createPersonController = async (req: FastifyRequest, reply: Fastify
     gender: z.string().optional(),
   }).passthrough();
   const data = schema.parse(req.body);
-  const person = await personService.createPerson(data);
+  const person = await personService.createPerson({ ...data, createdBy: req.user?.id, updatedBy: req.user?.id });
   return reply.send(person);
 };
 

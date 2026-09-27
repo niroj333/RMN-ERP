@@ -1,18 +1,16 @@
-import { AppError } from '@rmn-erp/core';
-import { db } from '@rmn-erp/core'; // Assuming core provides db access or we should query via something else. Wait, I might need to make sure how db is imported.
-import { organizations } from '../database/schema.js';
 import { eq, like } from 'drizzle-orm';
+import { organizations } from '../database/schema.js';
+import { db } from '@rmn-erp/core';
 
 export class HierarchyService {
   async calculatePath(currentId: string, parentId?: string | null): Promise<string> {
     if (!parentId) {
       return currentId;
     }
-    const parent = await db.query.organizations.findFirst({
-      where: eq(organizations.id, parentId)
-    });
+    const results = await db.select().from(organizations).where(eq(organizations.id, parentId)).limit(1);
+    const parent = results[0];
     if (!parent) {
-      throw new AppError('NOT_FOUND', 'Parent organization not found');
+      throw new Error('Parent organization not found');
     }
     return `${parent.path}.${currentId}`;
   }
@@ -21,31 +19,22 @@ export class HierarchyService {
     if (!parentId) {
       return;
     }
-    
-    const parent = await db.query.organizations.findFirst({
-      where: eq(organizations.id, parentId)
-    });
-    
+    const results = await db.select().from(organizations).where(eq(organizations.id, parentId)).limit(1);
+    const parent = results[0];
     if (!parent) {
-      throw new AppError('NOT_FOUND', 'Parent organization not found');
+      throw new Error('Parent organization not found');
     }
-
     const depth = parent.path.split('.').length;
     if (depth >= 10) {
-      throw new AppError('BAD_REQUEST', 'Maximum hierarchy depth of 10 exceeded');
+      throw new Error('Maximum hierarchy depth of 10 exceeded');
     }
-
     if (parent.type === 'EXTERNAL_INSTITUTION' && ['BRANCH', 'DEPARTMENT', 'UNIT'].includes(type)) {
-      throw new AppError('BAD_REQUEST', 'EXTERNAL_INSTITUTION cannot have internal children');
+      throw new Error('EXTERNAL_INSTITUTION cannot have internal children');
     }
   }
 
   async recalculateDescendantPaths(nodeId: string, newPath: string): Promise<void> {
-    // This is a naive implementation, ideally done in a transaction or with raw SQL.
-    const descendants = await db.query.organizations.findMany({
-      where: like(organizations.path, `${nodeId}.%`)
-    });
-
+    const descendants = await db.select().from(organizations).where(like(organizations.path, `${nodeId}.%`));
     for (const descendant of descendants) {
       const relativePath = descendant.path.substring(descendant.path.indexOf(nodeId) + nodeId.length + 1);
       const updatedPath = `${newPath}.${relativePath}`;

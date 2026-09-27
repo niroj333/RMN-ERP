@@ -1,4 +1,3 @@
-
 import { eq, inArray } from 'drizzle-orm';
 import { students } from '../database/schema.js';
 import { persons } from '@rmn-erp/person';
@@ -13,43 +12,35 @@ export class ForbiddenError extends Error {
   }
 }
 
+function hasBranchAccess(allowedBranchIds: string[], branchId: string): boolean {
+  return allowedBranchIds.includes('*') || allowedBranchIds.includes(branchId);
+}
+
 export const studentService = {
   async registerStudent(dbInstance: any, data: any, creatorId: string, allowedBranchIds: string[]) {
-    if (!allowedBranchIds.includes(data.branchId)) {
+    if (!hasBranchAccess(allowedBranchIds, data.branchId)) {
       throw new ForbiddenError();
     }
 
     return await dbInstance.transaction(async (tx: any) => {
-      // Create person
       const [person] = await tx.insert(persons).values({
         ...data.person,
         createdBy: creatorId,
         updatedBy: creatorId,
       }).returning();
 
-      // Generate Business ID
       const studentId = await numberingService.generateId(tx, 'STUDENT', data.branchId, {
         year: new Date().getFullYear().toString(),
       });
 
-      // Insert student record
       const [student] = await tx.insert(students).values({
-        personId: person.id,
-        studentId,
-        branchId: data.branchId,
-        status: 'PROSPECT',
-        createdBy: creatorId,
-        updatedBy: creatorId,
+        personId: person.id, studentId, branchId: data.branchId,
+        status: 'PROSPECT', createdBy: creatorId, updatedBy: creatorId,
       }).returning();
 
-      // Insert outbox event
       await insertOutboxEvent(tx, {
-        id: uuidv4(),
-        type: 'student.registered',
-        aggregateType: 'STUDENT',
-        aggregateId: student.id,
-        payload: student,
-        correlationId: uuidv4(),
+        id: uuidv4(), type: 'student.registered', aggregateType: 'STUDENT',
+        aggregateId: student.id, payload: student, correlationId: uuidv4(),
         producer: 'student-service',
       });
 
@@ -59,27 +50,17 @@ export const studentService = {
 
   async getStudent360(dbInstance: any, id: string, allowedBranchIds: string[]) {
     const [student] = await dbInstance.select().from(students).where(eq(students.id, id));
-    if (!student) {
-      throw new Error('Student not found');
-    }
-
-    if (!allowedBranchIds.includes(student.branchId)) {
-      throw new ForbiddenError();
-    }
-
+    if (!student) throw new Error('Student not found');
+    if (!hasBranchAccess(allowedBranchIds, student.branchId)) throw new ForbiddenError();
     const [person] = await dbInstance.select().from(persons).where(eq(persons.id, student.personId));
-
-    return {
-      ...student,
-      person,
-    };
+    return { ...student, person };
   },
 
   async searchStudents(dbInstance: any, query: string, allowedBranchIds: string[]) {
-    if (allowedBranchIds.length === 0) {
-      return [];
+    if (allowedBranchIds.includes('*')) {
+      return await dbInstance.select().from(students);
     }
-    // We could add query matching here if needed.
+    if (allowedBranchIds.length === 0) return [];
     return await dbInstance.select().from(students).where(inArray(students.branchId, allowedBranchIds));
   }
 };
