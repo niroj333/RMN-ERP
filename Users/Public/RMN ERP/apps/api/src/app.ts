@@ -12,10 +12,16 @@ import { outboxRelayWorker } from '@rmn-erp/events';
 import { masterDataRoutes } from '@rmn-erp/master-data';
 import { studentRoutes } from '@rmn-erp/student';
 import corePlugin from './plugins/core.js';
+import { propertyRoutes } from '@rmn-erp/properties';
+import { hrRoutes } from '@rmn-erp/hr';
+import { financeRoutes } from '@rmn-erp/finance';
+import { academicRoutes, AcademicController, AcademicService } from '@rmn-erp/academics';
+import { db } from '@rmn-erp/core';
+import { requireFullAuth } from '@rmn-erp/iam';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
-    logger: true,
+    logger,
     disableRequestLogging: true // Using custom logger from core
   });
 
@@ -33,6 +39,14 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(organizationRoutes);
   await app.register(masterDataRoutes);
   await app.register(studentRoutes);
+  
+  await app.register(propertyRoutes);
+  await app.register(hrRoutes, { db });
+  await app.register(financeRoutes, { db, requireAuth: requireFullAuth });
+  
+  const academicService = new AcademicService(db);
+  const academicController = new AcademicController(academicService);
+  await app.register(academicRoutes, { controller: academicController });
 
   app.addHook('onReady', async () => {
     outboxRelayWorker.start();
